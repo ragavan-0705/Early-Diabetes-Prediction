@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Diabetes.AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Header */
+        .header {
+            background-color: #3f51b5;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 400px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        /* Inputs */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Button */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Result */
+        .result {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <h2>Diabetes.AI</h2>
+    </div>
+
+    <!-- Main container -->
+    <div class="container">
+        <form id="diabetesForm">
+
+            <input type="number" placeholder="Age" required>
+            <input type="number" placeholder="Pregnancies" required>
+            <input type="number" placeholder="Glucose (mg/dL)" required>
+            <input type="number" placeholder="Blood Pressure (mm Hg)" required>
+            <input type="number" placeholder="Skin Thickness (mm)" required>
+            <input type="number" placeholder="Insulin (mu U/ml)" required>
+            <input type="number" step="0.1" placeholder="BMI" required>
+            <input type="number" step="0.001" placeholder="Diabetes Pedigree Function" required>
+            <input type="number" placeholder="Age (years)" required>
+
+            <button type="submit">Predict</button>
+
+        </form>
+
+        <div class="result">
+            Test Result
+        </div>
+    </div>
+
+</body>
+</html>
