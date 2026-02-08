@@ -181,14 +181,66 @@ input, select {
     bottom: 20px;
     right: 20px;
     z-index: 25;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-radius: 12px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+/* Collapsed state - small button */
+.chatbot-container.chatbot-collapsed {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Expanded state - full chat */
+.chatbot-container.chatbot-expanded {
     width: 320px;
     max-height: 500px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    border-radius: 12px;
     overflow: hidden;
-    background: #fff;
+}
+
+.chatbot-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 114, 255, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.chatbot-button:hover {
+    transform: scale(1.1);
+}
+
+.chatbot-container.chatbot-collapsed .chatbot-button {
+    display: flex;
+}
+
+.chatbot-container.chatbot-expanded .chatbot-button {
+    display: none;
+}
+
+.chatbot-container.chatbot-collapsed .chatbot-messages,
+.chatbot-container.chatbot-collapsed .chatbot-input-area {
+    display: none;
+}
+
+.chatbot-container.chatbot-expanded .chatbot-messages,
+.chatbot-container.chatbot-expanded .chatbot-input-area {
+    display: block;
 }
 
 .chatbot-header {
@@ -204,6 +256,14 @@ input, select {
 
 .chatbot-header:hover {
     opacity: 0.9;
+}
+
+.chatbot-container.chatbot-collapsed .chatbot-header {
+    display: none;
+}
+
+.chatbot-container.chatbot-expanded .chatbot-header {
+    display: flex;
 }
 
 .chatbot-close {
@@ -270,10 +330,6 @@ input, select {
 .chatbot-btn:hover {
     background: #0072ff;
     color: #fff;
-}
-
-.chatbot-hidden {
-    display: none;
 }
 
 /* ===== BMI Calculator Modal ===== */
@@ -434,8 +490,9 @@ input, select {
 </div>
 
 <!-- Chatbot Widget -->
-<div class="chatbot-container chatbot-hidden" id="chatbotContainer">
-    <div class="chatbot-header" onclick="toggleChatbot()">
+<div class="chatbot-container chatbot-collapsed" id="chatbotContainer">
+    <button class="chatbot-button" onclick="expandChatbot()" type="button">💬</button>
+    <div class="chatbot-header" onclick="collapseChatbot()">
         <span>Health Assistant 🤖</span>
         <button class="chatbot-close" id="chatbotToggleBtn">−</button>
     </div>
@@ -587,7 +644,6 @@ function openForm() {
 /* ===== Gender Based Fields ===== */
 function loadFields() {
     document.getElementById("commonFields").classList.remove("hidden");
-    document.getElementById("chatbotContainer").classList.remove("chatbot-hidden");
 
     if (document.getElementById("gender").value === "female") {
         document.getElementById("femaleField").classList.remove("hidden");
@@ -899,11 +955,17 @@ const fieldQuestionSets = {
     ]
 };
 
-function toggleChatbot() {
-    const btn = document.getElementById("chatbotToggleBtn");
-    const area = document.getElementById("chatInputArea");
-    area.classList.toggle("chatbot-hidden");
-    btn.textContent = area.classList.contains("chatbot-hidden") ? "+" : "−";
+function expandChatbot() {
+    document.getElementById("chatbotContainer").classList.remove("chatbot-collapsed");
+    document.getElementById("chatbotContainer").classList.add("chatbot-expanded");
+    setTimeout(() => {
+        document.getElementById("chatMessages").scrollTop = document.getElementById("chatMessages").scrollHeight;
+    }, 100);
+}
+
+function collapseChatbot() {
+    document.getElementById("chatbotContainer").classList.remove("chatbot-expanded");
+    document.getElementById("chatbotContainer").classList.add("chatbot-collapsed");
 }
 
 function initChatbot() {
@@ -913,7 +975,6 @@ function initChatbot() {
     appendBotMessage("👋 Hi! I can help you estimate values for fields in the form. Which field would you like help with?");
     
     const inputArea = document.getElementById("chatInputArea");
-    inputArea.classList.remove("chatbot-hidden");
     inputArea.innerHTML = '<div class="chatbot-options"></div>';
     const optionsDiv = inputArea.querySelector(".chatbot-options");
     
