@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7fb; color: #222; }
+        .container { max-width: 700px; margin: 80px auto; }
+        .card { background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        h1 { color: #2438c7; margin-bottom: 6px; }
+        p { margin-bottom: 14px; }
+        .meta { font-weight: 600; color: #444; }
+        .spacer { height: 20px; }
+        label { display:block; font-weight:600; margin-bottom:6px; }
+        input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:12px; }
+        .btn { padding:10px 18px; border-radius:8px; border:none; background:#0072ff; color:#fff; cursor:pointer; }
+        .actions { margin-top:12px; display:flex; gap:8px; }
+        .link { text-decoration:none; color:#0072ff; }
+        .flash { padding:10px 12px; border-radius:8px; margin-bottom:12px; }
+        .flash.success { background:#e6fff1; color:#006b3b; }
+        .flash.error { background:#ffeceb; color:#7a1b1b; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Account</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash {{ category }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <p class="meta">Name: <strong>{{ name }}</strong></p>
+        <p class="meta">Email: <strong>{{ email }}</strong></p>
+
+        <div class="spacer"></div>
+
+        <h2>Change Password</h2>
+        <form method="post" action="/profile">
+            <label for="current_password">Current Password</label>
+            <input id="current_password" name="current_password" type="password" required>
+
+            <label for="new_password">New Password</label>
+            <input id="new_password" name="new_password" type="password" required>
+
+            <label for="confirm_password">Confirm New Password</label>
+            <input id="confirm_password" name="confirm_password" type="password" required>
+
+            <div class="actions">
+                <button class="btn" type="submit">Update Password</button>
+                <a class="link" href="/home">Back to Home</a>
+                <a class="link" href="/logout">Logout</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

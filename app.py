@@ -83,6 +83,7 @@ def login():
 
         if user and check_password_hash(user[3], password):
             session["user"] = user[1]
+            session["email"] = user[2]
             return redirect("/home")
         else:
             flash("Invalid email or password", "error")
@@ -104,6 +105,51 @@ def home():
     if "user" not in session:
         return redirect("/login")
     return render_template("index.html")
+
+
+# =====================
+# PROFILE / ACCOUNT
+# =====================
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+    if "user" not in session:
+        return redirect("/login")
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        current = request.form.get("current_password")
+        new = request.form.get("new_password")
+        confirm = request.form.get("confirm_password")
+
+        email = session.get("email")
+        cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
+        row = cur.fetchone()
+
+        if not row or not check_password_hash(row[1], current):
+            flash("Current password is incorrect", "error")
+            conn.close()
+            return redirect("/profile")
+
+        if not new or new != confirm:
+            flash("New passwords do not match", "error")
+            conn.close()
+            return redirect("/profile")
+
+        hashed = generate_password_hash(new)
+        cur.execute("UPDATE users SET password = ? WHERE id = ?", (hashed, row[0]))
+        conn.commit()
+        conn.close()
+
+        flash("Password updated successfully", "success")
+        return redirect("/profile")
+
+    # GET
+    name = session.get("user")
+    email = session.get("email")
+    conn.close()
+    return render_template("profile.html", name=name, email=email)
 
 # =====================
 # ML PREDICTION
