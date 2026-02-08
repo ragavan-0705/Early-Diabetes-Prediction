@@ -91,6 +91,32 @@ ul {
 
 label {
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0072ff;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 2px;
+}
+
+.help-text {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+    font-weight: normal;
+    font-style: italic;
 }
 
 input, select {
@@ -148,6 +174,107 @@ input, select {
     font-weight: 700;
 }
 .profile-btn:hover { transform: scale(1.05); }
+
+/* ===== Chatbot Widget ===== */
+.chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 25;
+    width: 320px;
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.chatbot-header:hover {
+    opacity: 0.9;
+}
+
+.chatbot-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background: #f9f9f9;
+    max-height: 350px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.chat-message.bot {
+    background: #e3f2fd;
+    color: #1a237e;
+    margin-right: 20px;
+}
+
+.chat-message.user {
+    background: #0072ff;
+    color: #fff;
+    margin-left: 20px;
+    text-align: right;
+}
+
+.chatbot-input-area {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: #fff;
+}
+
+.chatbot-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chatbot-btn {
+    padding: 8px 12px;
+    border: 1px solid #0072ff;
+    background: #fff;
+    color: #0072ff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.chatbot-btn:hover {
+    background: #0072ff;
+    color: #fff;
+}
+
+.chatbot-hidden {
+    display: none;
+}
 </style>
 </head>
 
@@ -158,6 +285,16 @@ input, select {
 <!-- Top-right profile icon -->
 <div class="topbar">
     <a href="/profile" class="profile-btn" title="Profile">P</a>
+</div>
+
+<!-- Chatbot Widget -->
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chatbot-header" onclick="toggleChatbot()">
+        <span>HbA1c Assistant 🤖</span>
+        <button class="chatbot-close" id="chatbotToggleBtn">−</button>
+    </div>
+    <div class="chatbot-messages" id="chatMessages"></div>
+    <div class="chatbot-input-area" id="chatInputArea"></div>
 </div>
 
 <!-- ===== HOME SECTION ===== -->
@@ -207,27 +344,31 @@ input, select {
 
         <div id="commonFields" class="hidden">
             <div class="form-group">
-                <label>Age</label>
-                <input type="number" id="age">
+                <label>Age (in years)</label>
+                <input type="number" id="age" placeholder="e.g., 45">
             </div>
 
             <div class="form-group">
-                <label>BMI</label>
-                <input type="number" step="0.1" id="bmi">
+                <label>BMI <span class="help-icon" title="Body Mass Index (weight in kg / height in m²)">?</span></label>
+                <div class="help-text">Body Mass Index. Normal: 18-25, Overweight: 25-30, Obese: 30+</div>
+                <input type="number" step="0.1" id="bmi" placeholder="e.g., 24.5">
             </div>
 
             <div class="form-group">
-                <label>HbA1c Level</label>
-                <input type="number" step="0.1" id="hbA1c_level">
+                <label>HbA1c Level <span class="help-icon" title="Glycated Hemoglobin: Average blood sugar over 3 months">?</span></label>
+                <div class="help-text">Average blood sugar over 3 months (%). Normal: &lt;5.7, Prediabetes: 5.7-6.4, Diabetes: ≥6.5</div>
+                <input type="number" step="0.1" id="hbA1c_level" placeholder="e.g., 5.5">
             </div>
 
             <div class="form-group">
-                <label>Blood Glucose Level</label>
-                <input type="number" step="1" id="blood_glucose_level">
+                <label>Blood Glucose Level <span class="help-icon" title="Current blood sugar measurement">?</span></label>
+                <div class="help-text">Current blood sugar (mg/dL). Normal fasting: &lt;100, Prediabetes: 100-125, Diabetes: ≥126</div>
+                <input type="number" step="1" id="blood_glucose_level" placeholder="e.g., 110">
             </div>
 
             <div class="form-group">
-                <label>Hypertension</label>
+                <label>Hypertension <span class="help-icon" title="High blood pressure">?</span></label>
+                <div class="help-text">High blood pressure (140/90 mmHg or higher)</div>
                 <select id="hypertension">
                     <option value="0">No</option>
                     <option value="1">Yes</option>
@@ -235,7 +376,8 @@ input, select {
             </div>
 
             <div class="form-group">
-                <label>Heart disease</label>
+                <label>Heart Disease</label>
+                <div class="help-text">Includes heart attack, coronary artery disease, or angina</div>
                 <select id="heart_disease">
                     <option value="0">No</option>
                     <option value="1">Yes</option>
@@ -418,6 +560,174 @@ function populateLocations() {
 
 // populate initially with default
 populateLocations();
+
+// ===== Chatbot for HbA1c Estimation =====
+let chatState = {
+    currentQuestion: 0,
+    symptoms: {},
+    estimatedHbA1c: null
+};
+
+const chatQuestions = [
+    {
+        question: "How often do you experience excessive thirst?",
+        key: "thirst",
+        options: [
+            { text: "Never/Rarely", weight: 0.5 },
+            { text: "Sometimes (few times/week)", weight: 1.0 },
+            { text: "Often (daily)", weight: 1.5 },
+            { text: "Very often (multiple times/day)", weight: 2.0 }
+        ]
+    },
+    {
+        question: "How often do you urinate?",
+        key: "urination",
+        options: [
+            { text: "Normal (4-7 times/day)", weight: 0.5 },
+            { text: "Frequent (8-10 times/day)", weight: 1.0 },
+            { text: "Very frequent (11-15 times/day)", weight: 1.5 },
+            { text: "Extremely frequent (15+ times/day)", weight: 2.0 }
+        ]
+    },
+    {
+        question: "How is your energy level?",
+        key: "fatigue",
+        options: [
+            { text: "Normal, very energetic", weight: 0.3 },
+            { text: "Good, occasional tiredness", weight: 0.7 },
+            { text: "Tired often (even after rest)", weight: 1.2 },
+            { text: "Extremely fatigued (constant)", weight: 1.8 }
+        ]
+    },
+    {
+        question: "Any vision changes or blurriness?",
+        key: "vision",
+        options: [
+            { text: "No, vision is clear", weight: 0.4 },
+            { text: "Minor occasional blurriness", weight: 0.9 },
+            { text: "Frequent blurriness", weight: 1.4 },
+            { text: "Significant vision changes", weight: 1.9 }
+        ]
+    },
+    {
+        question: "Have you unexpectedly lost weight recently?",
+        key: "weight_loss",
+        options: [
+            { text: "No weight changes", weight: 0.3 },
+            { text: "Small loss (1-5 lbs)", weight: 0.8 },
+            { text: "Moderate loss (5-15 lbs)", weight: 1.3 },
+            { text: "Significant loss (15+ lbs)", weight: 1.9 }
+        ]
+    }
+];
+
+function toggleChatbot() {
+    const btn = document.getElementById("chatbotToggleBtn");
+    const area = document.getElementById("chatInputArea");
+    area.classList.toggle("chatbot-hidden");
+    btn.textContent = area.classList.contains("chatbot-hidden") ? "+" : "−";
+}
+
+function initChatbot() {
+    chatState = { currentQuestion: 0, symptoms: {}, estimatedHbA1c: null };
+    const chatMessages = document.getElementById("chatMessages");
+    chatMessages.innerHTML = '';
+    appendBotMessage("👋 Hi! I can help estimate your HbA1c level based on your symptoms. Let's start!");
+    askNextQuestion();
+}
+
+function appendBotMessage(text) {
+    const chatMessages = document.getElementById("chatMessages");
+    const msg = document.createElement("div");
+    msg.className = "chat-message bot";
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function appendUserMessage(text) {
+    const chatMessages = document.getElementById("chatMessages");
+    const msg = document.createElement("div");
+    msg.className = "chat-message user";
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function askNextQuestion() {
+    if (chatState.currentQuestion >= chatQuestions.length) {
+        finalizeChatbot();
+        return;
+    }
+
+    const q = chatQuestions[chatState.currentQuestion];
+    appendBotMessage(q.question);
+
+    const inputArea = document.getElementById("chatInputArea");
+    inputArea.innerHTML = '<div class="chatbot-options"></div>';
+    const optionsDiv = inputArea.querySelector(".chatbot-options");
+
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "chatbot-btn";
+        btn.textContent = opt.text;
+        btn.onclick = () => selectOption(q.key, opt.text, opt.weight);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function selectOption(key, text, weight) {
+    appendUserMessage(text);
+    chatState.symptoms[key] = weight;
+    chatState.currentQuestion++;
+    askNextQuestion();
+}
+
+function finalizeChatbot() {
+    const totalWeight = Object.values(chatState.symptoms).reduce((a, b) => a + b, 0);
+    const avgWeight = totalWeight / Object.keys(chatState.symptoms).length;
+
+    let estimatedHbA1c;
+    if (avgWeight < 0.8) {
+        estimatedHbA1c = 4.8 + (avgWeight / 0.8) * 0.8;
+    } else if (avgWeight < 1.3) {
+        estimatedHbA1c = 5.6 + ((avgWeight - 0.8) / 0.5) * 0.8;
+    } else {
+        estimatedHbA1c = 6.4 + ((avgWeight - 1.3) / 0.6) * 2.1;
+    }
+
+    estimatedHbA1c = Math.round(estimatedHbA1c * 10) / 10;
+    chatState.estimatedHbA1c = estimatedHbA1c;
+
+    appendBotMessage("Based on your symptoms, your estimated HbA1c level is approximately " + estimatedHbA1c + "% (" + getHbA1cInterpretation(estimatedHbA1c) + ")");
+    
+    setTimeout(() => {
+        appendBotMessage("Would you like me to fill this in the form?");
+        const inputArea = document.getElementById("chatInputArea");
+        inputArea.innerHTML = '<div class="chatbot-options"><button class="chatbot-btn" onclick="applyEstimateToForm()">Yes, fill it in</button><button class="chatbot-btn" onclick="initChatbot()">Start over</button></div>';
+    }, 500);
+}
+
+function getHbA1cInterpretation(hba1c) {
+    if (hba1c < 5.7) return "Normal ✅";
+    if (hba1c < 6.5) return "Prediabetic ⚠️";
+    return "Diabetic range 🏥";
+}
+
+function applyEstimateToForm() {
+    const field = document.getElementById("hbA1c_level");
+    if (field) {
+        field.value = chatState.estimatedHbA1c;
+        appendBotMessage("✅ Filled HbA1c field with " + chatState.estimatedHbA1c + "%. You can adjust if needed!");
+        setTimeout(() => {
+            const inputArea = document.getElementById("chatInputArea");
+            inputArea.innerHTML = '<div class="chatbot-options"><button class="chatbot-btn" onclick="initChatbot()">Ask again</button></div>';
+        }, 1000);
+    }
+}
+
+// Initialize chatbot when predict section is shown
+document.addEventListener("DOMContentLoaded", initChatbot);
 </script>
 
 </body>
