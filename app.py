@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import sqlite3
 import numpy as np
 import joblib
@@ -6,7 +6,7 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # session security
+app.secret_key = "supersecretkey"
 
 # =====================
 # LOAD MODEL
@@ -40,7 +40,6 @@ create_users_table()
 # =====================
 # AUTH ROUTES
 # =====================
-
 @app.route("/")
 def root():
     return redirect("/login")
@@ -55,13 +54,17 @@ def signup():
         try:
             conn = get_db()
             cur = conn.cursor()
-            cur.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                        (name, email, password))
+            cur.execute(
+                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+                (name, email, password)
+            )
             conn.commit()
             conn.close()
+            flash("Account created successfully! Please login.", "success")
             return redirect("/login")
         except:
-            return "Email already exists"
+            flash("Email already exists!", "error")
+            return redirect("/signup")
 
     return render_template("signup.html")
 
@@ -82,7 +85,8 @@ def login():
             session["user"] = user[1]
             return redirect("/home")
         else:
-            return "Invalid credentials"
+            flash("Invalid email or password", "error")
+            return redirect("/login")
 
     return render_template("login.html")
 
@@ -108,7 +112,7 @@ def home():
 def predict():
     data = request.json
 
-    features = np.array([[
+    features = np.array([[  
         float(data.get("pregnancies", 0)),
         float(data["glucose"]),
         float(data["bp"]),

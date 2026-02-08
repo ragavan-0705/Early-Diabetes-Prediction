@@ -2,7 +2,15 @@
 <html>
 <head>
     <title>Login</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Animate.css -->
+    <link rel="stylesheet"
+     href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
@@ -15,6 +23,37 @@
     </form>
     <a href="/signup">Create an account</a>
 </div>
+
+<!-- ✅ FLASH DATA (HTML ONLY, JINJA SAFE) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="flash-data"
+     data-category="{{ messages[0][0] }}"
+     data-message="{{ messages[0][1] }}">
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ✅ PURE JAVASCRIPT (NO JINJA HERE) -->
+<script>
+    const flashBox = document.getElementById("flash-data");
+    if (flashBox) {
+        const category = flashBox.dataset.category;
+        const message = flashBox.dataset.message;
+
+        Swal.fire({
+            icon: category === "success" ? "success" : "error",
+            title: category === "success" ? "Success" : "Oops!",
+            text: message,
+            showClass: {
+                popup: 'animate__animated animate__shakeX'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOut'
+            }
+        });
+    }
+</script>
 
 </body>
 </html>
