@@ -275,6 +275,129 @@ input, select {
 .chatbot-hidden {
     display: none;
 }
+
+/* ===== BMI Calculator Modal ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-header {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2438c7;
+    margin-bottom: 20px;
+}
+
+.modal-close {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.modal-btn-calculate {
+    background: #0072ff;
+    color: #fff;
+}
+
+.modal-btn-calculate:hover {
+    background: #0058cc;
+}
+
+.modal-btn-cancel {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.modal-btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.bmi-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bmi-input-wrapper input {
+    flex: 1;
+}
+
+.bmi-calc-btn {
+    padding: 10px 16px;
+    background: #0072ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.bmi-calc-btn:hover {
+    background: #0058cc;
+    transform: scale(1.02);
+}
 </style>
 </head>
 
@@ -285,6 +408,29 @@ input, select {
 <!-- Top-right profile icon -->
 <div class="topbar">
     <a href="/profile" class="profile-btn" title="Profile">P</a>
+</div>
+
+<!-- BMI Calculator Modal -->
+<div id="bmiModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeBMIModal()">&times;</button>
+        <div class="modal-header">Calculate BMI</div>
+        
+        <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Height (cm)</label>
+            <input type="number" step="0.1" id="modalHeight" class="modal-input" placeholder="e.g., 170">
+        </div>
+        
+        <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Weight (kg)</label>
+            <input type="number" step="0.1" id="modalWeight" class="modal-input" placeholder="e.g., 75">
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn modal-btn-calculate" onclick="calculateBMIFromModal()">Calculate</button>
+            <button type="button" class="modal-btn modal-btn-cancel" onclick="closeBMIModal()">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <!-- Chatbot Widget -->
@@ -351,7 +497,10 @@ input, select {
             <div class="form-group">
                 <label>BMI <span class="help-icon" title="Body Mass Index (weight in kg / height in m²)">?</span></label>
                 <div class="help-text">Body Mass Index. Normal: 18-25, Overweight: 25-30, Obese: 30+</div>
-                <input type="number" step="0.1" id="bmi" placeholder="e.g., 24.5">
+                <div class="bmi-input-wrapper">
+                    <input type="number" step="0.1" id="bmi" placeholder="e.g., 24.5">
+                    <button type="button" class="bmi-calc-btn" onclick="openBMIModal()">Calculate</button>
+                </div>
             </div>
 
             <div class="form-group">
@@ -450,6 +599,54 @@ function loadFields() {
         initChatbot();
     }
 }
+
+/* ===== BMI Calculator ===== */
+function openBMIModal() {
+    document.getElementById("bmiModal").classList.add("show");
+    document.getElementById("modalHeight").value = "";
+    document.getElementById("modalWeight").value = "";
+    document.getElementById("modalHeight").focus();
+}
+
+function closeBMIModal() {
+    document.getElementById("bmiModal").classList.remove("show");
+}
+
+function calculateBMIFromModal() {
+    const heightCm = parseFloat(document.getElementById("modalHeight").value);
+    const weightKg = parseFloat(document.getElementById("modalWeight").value);
+    
+    if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+        alert("Please enter valid height and weight values");
+        return;
+    }
+    
+    // Convert height from cm to meters
+    const heightM = heightCm / 100;
+    
+    // Calculate BMI: weight (kg) / (height (m))^2
+    const bmi = weightKg / (heightM * heightM);
+    
+    // Round to 1 decimal place
+    const bmiRounded = Math.round(bmi * 10) / 10;
+    
+    // Fill BMI field
+    document.getElementById("bmi").value = bmiRounded;
+    
+    // Show interpretation
+    let interpretation;
+    if (bmiRounded < 18.5) interpretation = "Underweight";
+    else if (bmiRounded < 25) interpretation = "Normal";
+    else if (bmiRounded < 30) interpretation = "Overweight";
+    else interpretation = "Obese";
+    
+    alert("Your BMI is " + bmiRounded + " (" + interpretation + ")");
+    closeBMIModal();
+}
+
+window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeBMIModal();
+});
 
 /* ===== Prediction Call ===== */
 function predict() {
