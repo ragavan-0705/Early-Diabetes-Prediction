@@ -1,47 +1,117 @@
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #ffe8e8 0%, #fff5e6 25%, #ffe6cc 50%, #ffeedd 75%, #fff0f0 100%);
+    background-size: 400% 400%;
+    animation: diabetesGradient 6s ease infinite;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glucose Meter Icons */
+body::before {
+    content: '💉 🩺 💉';
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    font-size: 40px;
+    opacity: 0.4;
+    animation: float 5s ease-in-out infinite;
+    z-index: 1;
+}
+
+body::after {
+    content: '❤️ 🩸 ❤️';
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    font-size: 40px;
+    opacity: 0.4;
+    animation: float 6s ease-in-out infinite reverse;
+    z-index: 1;
+}
+
+@keyframes diabetesGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
 }
 
 .form-container {
     background: #fff;
     padding: 30px;
     width: 350px;
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+    position: relative;
+    z-index: 10;
+    border: 2px solid rgba(255,255,255,0.2);
 }
 
 h2 {
     text-align: center;
     margin-bottom: 20px;
+    color: #ff6b6b;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin: 10px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: none;
+    border-color: #ff6b6b;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+    background: #fff;
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background: #667eea;
+    padding: 12px;
+    background: linear-gradient(135deg, #ff6b6b, #e74c3c);
     border: none;
     color: white;
     font-size: 16px;
     cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 button:hover {
-    background: #5a67d8;
+    background: linear-gradient(135deg, #ee5a6f, #c0392b);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
 }
 
 a {
     display: block;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 15px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
 }
