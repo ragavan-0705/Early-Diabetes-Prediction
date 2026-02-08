@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+import pandas as pd
 import sqlite3
 import numpy as np
 import joblib
@@ -14,6 +15,14 @@ app.secret_key = "supersecretkey"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model = joblib.load(os.path.join(BASE_DIR, "diabetes_model.pkl"))
 scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
+
+# Load feature columns from the CSV so we build a compatible input vector
+CSV_PATH = os.path.join(BASE_DIR, "diabetes.csv")
+try:
+    _df_sample = pd.read_csv(CSV_PATH, nrows=5)
+    FEATURE_COLS = [c for c in _df_sample.columns if c != "diabetes"]
+except Exception:
+    FEATURE_COLS = None
 
 # =====================
 # DATABASE SETUP
@@ -156,21 +165,70 @@ def profile():
 # =====================
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.json
+    data = request.json or {}
 
-    features = np.array([[  
-        float(data.get("pregnancies", 0)),
-        float(data["glucose"]),
-        float(data["bp"]),
-        float(data["bmi"]),
-        float(data["age"]),
-        1 if data["gender"] == "male" else 0
-    ]])
+    if FEATURE_COLS is None:
+        return jsonify({"error": "Server missing feature metadata"}), 500
 
+    # start with zeros/defaults for every column
+    row = {c: 0 for c in FEATURE_COLS}
+
+    # year
+    row["year"] = int(data.get("year", 2019))
+
+    # gender: dataset uses 1.0/0.0
+    row["gender"] = 1.0 if data.get("gender") == "male" else 0.0
+
+    # basic numeric fields
+    if data.get("age") is not None:
+        row["age"] = float(data.get("age"))
+    if data.get("bmi") is not None:
+        row["bmi"] = float(data.get("bmi"))
+    if data.get("hbA1c_level") is not None:
+        row["hbA1c_level"] = float(data.get("hbA1c_level"))
+    if data.get("blood_glucose_level") is not None:
+        row["blood_glucose_level"] = float(data.get("blood_glucose_level"))
+
+    # health flags
+    row["hypertension"] = 1 if data.get("hypertension") else 0
+    row["heart_disease"] = 1 if data.get("heart_disease") else 0
+
+    # race mapping (one-hot columns named like 'race:Asian')
+    race = data.get("race")
+    if race:
+        race_col = f"race:{race}"
+        if race_col in row:
+            row[race_col] = 1
+
+    # smoking history mapping
+    smoke = data.get("smoking_history")
+    if smoke:
+        smoke_col = f"smoking_history_{smoke}"
+        # note: one header contains a space 'smoking_history_not current'
+        if smoke_col in row:
+            row[smoke_col] = 1
+        else:
+            # try space variant
+            alt = smoke_col.replace("_", " ", 1)
+            if alt in row:
+                row[alt] = 1
+
+    # location mapping (columns: location_X)
+    loc = data.get("location")
+    if loc:
+        loc_col = f"location_{loc}"
+        if loc_col in row:
+            row[loc_col] = 1
+
+    # Build 2D features array in correct column order
+    vals = [row[c] for c in FEATURE_COLS]
+    features = np.array([vals], dtype=float)
+
+    # scale and predict
     scaled = scaler.transform(features)
     result = model.predict(scaled)[0]
 
-    return jsonify({"result": "Diabetic" if result == 1 else "Not Diabetic"})
+    return jsonify({"result": "Diabetic" if int(result) == 1 else "Not Diabetic"})
 
 # =====================
 # MAIN
