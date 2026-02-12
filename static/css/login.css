@@ -115,3 +115,59 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+/* Password toggle styles */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 44px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+}
+
+.toggle-password:focus { outline: none; }
+
+/* More specific overrides to prevent inheriting the main form button styles */
+.password-wrapper .toggle-password {
+    width: auto !important;
+    height: 36px;
+    padding: 6px;
+    border-radius: 6px;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    top: 48% !important;
+}
+
+.password-wrapper .toggle-password svg {
+    display: block;
+    pointer-events: none;
+}
+
+/* Prevent global button hover/transition from affecting the eye button */
+.password-wrapper .toggle-password {
+    transition: none !important;
+}
+
+.password-wrapper .toggle-password:hover,
+.password-wrapper .toggle-password:focus,
+.password-wrapper .toggle-password:active {
+    transform: translateY(-50%) !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
