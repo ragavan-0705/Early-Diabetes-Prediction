@@ -631,6 +631,7 @@ input, select {
         <button class="btn" onclick="predict()">Predict Result</button>
 
         <div id="resultBox" class="hidden"></div>
+        <button id="downloadBtn" class="btn hidden" onclick="downloadReport()">Download Report</button>
     </div>
 </section>
 
@@ -740,12 +741,41 @@ function predict() {
         box.innerText = "Prediction Result: " + res.result;
         box.style.background =
             res.result === "Diabetic" ? "#ffd6d6" : "#d6ffd6";
+        // expose a download button with the data used for prediction
+        window.__lastPredictionPayload = Object.assign({}, data, {result: res.result, probability: res.probability});
+        const dl = document.getElementById('downloadBtn');
+        dl.classList.remove('hidden');
     }).catch(err => {
         const box = document.getElementById("resultBox");
         box.classList.remove("hidden");
         box.innerText = "Request failed";
         box.style.background = "#ffecec";
     });
+}
+
+function downloadReport() {
+    const payload = window.__lastPredictionPayload || {};
+    fetch('/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Report generation failed');
+        return res.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const fname = 'diabetes_report.pdf';
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(err => alert('Unable to download report: ' + err.message));
 }
 
 /* ===== Microorganism Background ===== */
