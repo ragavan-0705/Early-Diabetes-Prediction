@@ -564,12 +564,18 @@ input, select {
                 <label>HbA1c Level <span class="help-icon" title="Glycated Hemoglobin: Average blood sugar over 3 months">?</span></label>
                 <div class="help-text">Average blood sugar over 3 months (%). Normal: &lt;5.7, Prediabetes: 5.7-6.4, Diabetes: ≥6.5</div>
                 <input type="number" step="0.1" id="hbA1c_level" placeholder="e.g., 5.5">
+                <div style="margin-top: 8px; padding: 8px 12px; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border-radius: 6px; border-left: 3px solid #7c4dff; font-size: 12px; color: #4a148c; cursor: pointer;" onclick="expandChatbot(); selectField('HbA1c'); return false;" title="Click to estimate using chatbot">
+                    🤖 <strong>Don't know?</strong> Let our Health Assistant estimate it for you based on your symptoms!
+                </div>
             </div>
 
             <div class="form-group">
                 <label>Blood Glucose Level <span class="help-icon" title="Current blood sugar measurement">?</span></label>
                 <div class="help-text">Current blood sugar (mg/dL). Normal fasting: &lt;100, Prediabetes: 100-125, Diabetes: ≥126</div>
                 <input type="number" step="1" id="blood_glucose_level" placeholder="e.g., 110">
+                <div style="margin-top: 8px; padding: 8px 12px; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 6px; border-left: 3px solid #ff6f00; font-size: 12px; color: #e65100; cursor: pointer;" onclick="expandChatbot(); selectField('Blood Glucose'); return false;" title="Click to estimate using chatbot">
+                    🤖 <strong>Don't know?</strong> Let our Health Assistant estimate it for you based on your symptoms!
+                </div>
             </div>
 
             <div class="form-group">
@@ -950,38 +956,6 @@ const fieldQuestionSets = {
                 { text: "Often", weight: 1.9 }
             ]
         }
-    ],
-    "BMI": [
-        {
-            question: "How would you describe your current diet?",
-            key: "diet",
-            options: [
-                { text: "Mostly healthy (fruits, vegetables, lean proteins)", weight: 0.4 },
-                { text: "Mixed (some healthy, some processed foods)", weight: 0.9 },
-                { text: "Mostly processed/fast foods", weight: 1.4 },
-                { text: "High sugar/fried foods (frequent)", weight: 1.9 }
-            ]
-        },
-        {
-            question: "How often do you exercise per week?",
-            key: "exercise",
-            options: [
-                { text: "5+ days/week (moderate to intense)", weight: 0.3 },
-                { text: "3-4 days/week", weight: 0.7 },
-                { text: "1-2 days/week", weight: 1.2 },
-                { text: "None or very rarely", weight: 1.9 }
-            ]
-        },
-        {
-            question: "How would you describe your activity level?",
-            key: "activity",
-            options: [
-                { text: "Very active (job + exercise)", weight: 0.4 },
-                { text: "Moderately active", weight: 0.8 },
-                { text: "Sedentary job, some activity", weight: 1.3 },
-                { text: "Very sedentary (desk job, minimal activity)", weight: 1.9 }
-            ]
-        }
     ]
 };
 
@@ -1124,10 +1098,6 @@ function finalizeEstimate() {
         estimated = 80 + avgWeight * 35;
         estimated = Math.round(estimated);
         interpretation = estimated < 100 ? "Normal ✅" : (estimated < 126 ? "Prediabetic ⚠️" : "Diabetic 🏥");
-    } else if (field === "BMI") {
-        estimated = 18.5 + avgWeight * 6;
-        estimated = Math.round(estimated * 10) / 10;
-        interpretation = estimated < 25 ? "Normal ✅" : (estimated < 30 ? "Overweight ⚠️" : "Obese 🏥");
     }
 
     chatState.estimated = estimated;
@@ -1147,7 +1117,6 @@ function applyEstimateToForm() {
     
     if (field === "HbA1c") fieldId = "hbA1c_level";
     else if (field === "Blood Glucose") fieldId = "blood_glucose_level";
-    else if (field === "BMI") fieldId = "bmi";
     
     const inputField = document.getElementById(fieldId);
     if (inputField) {
