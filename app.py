@@ -176,6 +176,34 @@ def profile():
     conn.close()
     return render_template("profile.html", name=name, email=email)
 
+@app.route("/verify-password", methods=["POST"])
+def verify_password():
+    """Verify if the current password is correct (AJAX endpoint)"""
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Not logged in"}), 401
+
+    data = request.json or {}
+    current_password = data.get("current_password", "")
+
+    if not current_password:
+        return jsonify({"success": False, "message": "Password required"})
+
+    email = session.get("email")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT password FROM users WHERE email = ?", (email,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"success": False, "message": "User not found"})
+
+    # Check if password matches
+    if check_password_hash(row[0], current_password):
+        return jsonify({"success": True, "message": "Password verified"})
+    else:
+        return jsonify({"success": False, "message": "Incorrect password"})
+
 # =====================
 # ML PREDICTION
 # =====================

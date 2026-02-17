@@ -461,9 +461,9 @@ input, select {
 
 <canvas id="bg"></canvas>
 
-<!-- Top-right profile icon -->
+<!-- Top-right settings icon -->
 <div class="topbar">
-    <a href="/profile" class="profile-btn" title="Profile">P</a>
+    <a href="/profile" class="profile-btn" title="Settings">⚙️</a>
 </div>
 
 <!-- BMI Calculator Modal -->
@@ -499,6 +499,45 @@ input, select {
     <div class="chatbot-messages" id="chatMessages"></div>
     <div class="chatbot-input-area" id="chatInputArea"></div>
 </div>
+
+<!-- Show chatbot only when the prediction form is visible -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const c = document.getElementById('chatbotContainer');
+        if (!c) return; // nothing to do
+
+        const predict = document.getElementById('predict');
+        // If there's no prediction section on this page, remove chatbot
+        if (!predict) {
+            c.remove();
+            return;
+        }
+
+        // Toggle chatbot visibility based on whether #predict is visible
+        function updateChatbotVisibility() {
+            const hidden = predict.classList.contains('hidden');
+            c.style.display = hidden ? 'none' : 'block';
+        }
+
+        // Initial state
+        updateChatbotVisibility();
+
+        // Watch for class changes on the predict section (show/hide)
+        try {
+            const mo = new MutationObserver(updateChatbotVisibility);
+            mo.observe(predict, { attributes: true, attributeFilter: ['class'] });
+        } catch (e) {
+            // Fallback: poll for visibility changes
+            let last = predict.className;
+            setInterval(() => {
+                if (predict.className !== last) {
+                    last = predict.className;
+                    updateChatbotVisibility();
+                }
+            }, 500);
+        }
+    });
+</script>
 
 <!-- ===== HOME SECTION ===== -->
 <section id="home">

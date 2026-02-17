@@ -8,17 +8,29 @@
         .container { max-width: 700px; margin: 80px auto; }
         .card { background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
         h1 { color: #2438c7; margin-bottom: 6px; }
+        h2 { color: #333; margin-top: 24px; margin-bottom: 16px; }
         p { margin-bottom: 14px; }
         .meta { font-weight: 600; color: #444; }
         .spacer { height: 20px; }
         label { display:block; font-weight:600; margin-bottom:6px; }
-        input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:12px; }
-        .btn { padding:10px 18px; border-radius:8px; border:none; background:#0072ff; color:#fff; cursor:pointer; }
-        .actions { margin-top:12px; display:flex; gap:8px; }
-        .link { text-decoration:none; color:#0072ff; }
-        .flash { padding:10px 12px; border-radius:8px; margin-bottom:12px; }
-        .flash.success { background:#e6fff1; color:#006b3b; }
-        .flash.error { background:#ffeceb; color:#7a1b1b; }
+        input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:12px; box-sizing: border-box; }
+        .btn { padding:10px 18px; border-radius:8px; border:none; background:#0072ff; color:#fff; cursor:pointer; font-weight: 600; }
+        .btn:hover { background: #0058cc; }
+        .btn-toggle { padding:12px 20px; background: linear-gradient(135deg, #0072ff, #0052cc); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; width: 100%; transition: 0.3s; }
+        .btn-toggle:hover { background: linear-gradient(135deg, #0058cc, #003d99); }
+        .password-fields { display: none; margin-top: 12px; }
+        .password-fields.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .verification-method { padding: 12px 0; }
+        input[readonly] { background-color: #f5f5f5; cursor: not-allowed; }
+        .actions { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+        .actions-left { display: flex; gap: 8px; }
+        .actions-right { display: flex; gap: 8px; }
+        .link { text-decoration: none; color: #0072ff; font-weight: 600; padding: 10px 18px; border-radius: 8px; transition: 0.3s; }
+        .link:hover { background: #f0f7ff; }
+        .flash { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
+        .flash.success { background: #e6fff1; color: #006b3b; }
+        .flash.error { background: #ffeceb; color: #7a1b1b; }
     </style>
 </head>
 <body>
@@ -39,25 +51,313 @@
 
         <div class="spacer"></div>
 
-        <h2>Change Password</h2>
-        <form method="post" action="/profile">
-            <label for="current_password">Current Password</label>
-            <input id="current_password" name="current_password" type="password" required>
+        <button class="btn-toggle" onclick="togglePasswordFields()">🔐 Change Password</button>
 
-            <label for="new_password">New Password</label>
-            <input id="new_password" name="new_password" type="password" required>
+        <form method="post" action="/profile" id="passwordForm">
+            <div class="password-fields" id="passwordFields">
+                <!-- Verification Method Toggle -->
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button type="button" class="btn" style="flex: 1; background: #2196F3;" id="methodPassword" onclick="switchVerificationMethod('password')">🔐 Password</button>
+                    <button type="button" class="btn" style="flex: 1; background: #999;" id="methodOTP" onclick="switchVerificationMethod('otp')">📧 Email OTP</button>
+                </div>
 
-            <label for="confirm_password">Confirm New Password</label>
-            <input id="confirm_password" name="confirm_password" type="password" required>
+                <!-- Step 1: Verify Current Password -->
+                <div id="step1-verify" class="verification-method">
+                    <label for="current_password">Current Password</label>
+                    <input id="current_password" name="current_password" type="password" placeholder="Enter current password">
+                    <button type="button" class="btn" style="width: 100%; margin-top: 8px;" onclick="verifyCurrentPassword()">Verify Password</button>
+                    <div id="verifyMessage" style="margin-top: 8px; font-size: 13px; display: none;"></div>
+                </div>
+
+                <!-- Step 1: Verify Email OTP (Hidden by default) -->
+                <div id="step1-otp" class="verification-method" style="display: none;">
+                    <label for="otp_email">Email</label>
+                    <input id="otp_email" type="email" placeholder="Enter your email" style="background: #fff;">
+                    
+                    <button type="button" class="btn" style="width: 100%; margin-top: 8px; background: #ff6f00;" onclick="sendOTP()">Send OTP to Email</button>
+                    <div id="otpMessage" style="margin-top: 8px; font-size: 13px; display: none;"></div>
+                    
+                    <div id="otp-input-section" style="display: none; margin-top: 12px;">
+                        <label for="otp_code">Enter OTP (6 digits)</label>
+                        <input id="otp_code" type="text" maxlength="6" placeholder="000000" style="font-size: 20px; letter-spacing: 8px; text-align: center;">
+                        <button type="button" class="btn" style="width: 100%; margin-top: 8px;" onclick="verifyOTP()">Verify OTP</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Update New Password (Hidden until verified) -->
+                <div id="step2-newpassword" style="display: none; margin-top: 16px;">
+                    <p style="color: #2d7f3a; font-weight: 600; margin-bottom: 12px;">✅ Verified! Now enter your new password.</p>
+                    <label for="new_password">New Password</label>
+                    <input id="new_password" name="new_password" type="password" placeholder="Enter new password">
+
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input id="confirm_password" name="confirm_password" type="password" placeholder="Confirm new password">
+
+                    <button class="btn" type="submit" style="width: 100%; margin-top: 8px;">Update Password</button>
+                    <button type="button" class="btn" style="width: 100%; margin-top: 8px; background: #999;" onclick="resetPasswordForm()">Cancel</button>
+                </div>
+            </div>
 
             <div class="actions">
-                <button class="btn" type="submit">Update Password</button>
-                <a class="link" href="/home">Back to Home</a>
-                <a class="link" href="/logout">Logout</a>
+                <div class="actions-left">
+                    <a class="link" href="/home">← Back to Home</a>
+                </div>
+                <div class="actions-right">
+                    <a class="link" href="/logout">Logout →</a>
+                </div>
             </div>
         </form>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+// Initialize EmailJS with your credentials
+emailjs.init("kzffnaM6BH-arciH8");
+
+const EMAILJS_SERVICE_ID = "service_foo85al";
+const EMAILJS_TEMPLATE_ID = "template_4euf20g";
+const EMAILJS_CONFIRMATION_TEMPLATE_ID = "template_4euf20g";
+
+let currentVerificationMethod = 'password';
+let generatedOTP = null;
+
+function togglePasswordFields() {
+    const fields = document.getElementById('passwordFields');
+    fields.classList.toggle('show');
+    if (fields.classList.contains('show')) {
+        switchVerificationMethod('password');
+    } else {
+        resetPasswordForm();
+    }
+}
+
+function switchVerificationMethod(method) {
+    currentVerificationMethod = method;
+    const passwordMethod = document.getElementById('step1-verify');
+    const otpMethod = document.getElementById('step1-otp');
+    const methodPasswordBtn = document.getElementById('methodPassword');
+    const methodOTPBtn = document.getElementById('methodOTP');
+    
+    if (method === 'password') {
+        passwordMethod.style.display = 'block';
+        otpMethod.style.display = 'none';
+        methodPasswordBtn.style.background = '#2196F3';
+        methodOTPBtn.style.background = '#999';
+        document.getElementById('current_password').focus();
+    } else {
+        passwordMethod.style.display = 'none';
+        otpMethod.style.display = 'block';
+        methodPasswordBtn.style.background = '#999';
+        methodOTPBtn.style.background = '#ff6f00';
+        
+        // Get email from the page - look for "Email: <email>" text
+        const emailElements = document.querySelectorAll('p.meta');
+        let email = '';
+        emailElements.forEach(el => {
+            const text = el.textContent;
+            if (text.includes('Email:')) {
+                // Extract email from "Email: example@gmail.com"
+                email = text.split('Email:')[1].trim();
+            }
+        });
+        
+        document.getElementById('otp_email').value = email;
+        document.getElementById('otp_email').focus();
+    }
+}
+
+function verifyCurrentPassword() {
+    const currentPassword = document.getElementById('current_password').value;
+    const msgDiv = document.getElementById('verifyMessage');
+    
+    if (!currentPassword) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Please enter your current password.';
+        return;
+    }
+    
+    // Show loading state
+    msgDiv.style.display = 'block';
+    msgDiv.style.color = '#0072ff';
+    msgDiv.innerHTML = '⏳ Verifying...';
+    
+    // Send AJAX request to verify password
+    fetch('/verify-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            current_password: currentPassword
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            msgDiv.style.display = 'none';
+            document.getElementById('step1-verify').style.display = 'none';
+            document.getElementById('step1-otp').style.display = 'none';
+            document.getElementById('step2-newpassword').style.display = 'block';
+            document.getElementById('new_password').focus();
+        } else {
+            msgDiv.style.display = 'block';
+            msgDiv.style.color = '#d32f2f';
+            msgDiv.innerHTML = '❌ ' + (data.message || 'Incorrect password. Please try again.');
+        }
+    })
+    .catch(err => {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Error verifying password. Please try again.';
+        console.error(err);
+    });
+}
+
+function sendOTP() {
+    const msgDiv = document.getElementById('otpMessage');
+    const email = document.getElementById('otp_email').value.trim();
+    
+    if (!email) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Email not found.';
+        return;
+    }
+    
+    // Validate email format
+    if (!email.includes('@')) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Invalid email address.';
+        return;
+    }
+    
+    // Generate 6-digit OTP
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    msgDiv.style.display = 'block';
+    msgDiv.style.color = '#0072ff';
+    msgDiv.innerHTML = '⏳ Sending OTP to your email...';
+    
+    // Debug: Log what we're sending
+    const emailData = {
+        email: email,
+        otp_code: generatedOTP
+    };
+    console.log('EmailJS Debug - Sending:', {
+        service: EMAILJS_SERVICE_ID,
+        template: EMAILJS_TEMPLATE_ID,
+        data: emailData
+    });
+    
+    // Send OTP via EmailJS
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailData)
+    .then(res => {
+        console.log('EmailJS Success:', res);
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#2d7f3a';
+        msgDiv.innerHTML = '✅ OTP sent to your email! Check your inbox.';
+        
+        // Show OTP input section and disable send button
+        document.getElementById('otp-input-section').style.display = 'block';
+        const sendBtn = document.querySelector('#step1-otp button:nth-of-type(1)');
+        sendBtn.disabled = true;
+        sendBtn.style.opacity = '0.6';
+        document.getElementById('otp_code').focus();
+        
+        // Set timer to resend OTP (30 seconds)
+        let resendTimer = 30;
+        const originalText = sendBtn.innerHTML;
+        
+        const timer = setInterval(() => {
+            resendTimer--;
+            sendBtn.innerHTML = `Resend OTP (${resendTimer}s)`;
+            if (resendTimer <= 0) {
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.innerHTML = originalText;
+            }
+        }, 1000);
+    })
+    .catch(err => {
+        console.error('EmailJS Error Details:', err);
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Error: ' + (err.text || err.message || 'Unknown error');
+        console.log('Status:', err.status);
+        console.log('Full error object:', err);
+    });
+}
+
+function verifyOTP() {
+    const otpInput = document.getElementById('otp_code').value;
+    const msgDiv = document.getElementById('otpMessage');
+    
+    if (!otpInput) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Please enter the OTP.';
+        return;
+    }
+    
+    if (otpInput !== generatedOTP) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = '#d32f2f';
+        msgDiv.innerHTML = '❌ Invalid OTP. Please try again.';
+        return;
+    }
+    
+    // OTP verified successfully
+    msgDiv.style.display = 'none';
+    document.getElementById('step1-verify').style.display = 'none';
+    document.getElementById('step1-otp').style.display = 'none';
+    document.getElementById('step2-newpassword').style.display = 'block';
+    document.getElementById('new_password').focus();
+}
+
+function resetPasswordForm() {
+    document.getElementById('current_password').value = '';
+    document.getElementById('otp_code').value = '';
+    document.getElementById('new_password').value = '';
+    document.getElementById('confirm_password').value = '';
+    document.getElementById('verifyMessage').style.display = 'none';
+    document.getElementById('otpMessage').style.display = 'none';
+    document.getElementById('otp-input-section').style.display = 'none';
+    document.getElementById('step1-verify').style.display = 'block';
+    document.getElementById('step1-otp').style.display = 'none';
+    document.getElementById('step2-newpassword').style.display = 'none';
+    document.getElementById('passwordFields').classList.remove('show');
+    generatedOTP = null;
+    currentVerificationMethod = 'password';
+}
+
+// Form submission validation
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    const newPwd = document.getElementById('new_password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    
+    if (!newPwd || !confirm) {
+        alert('Please fill in all new password fields.');
+        e.preventDefault();
+        return false;
+    }
+    
+    if (newPwd !== confirm) {
+        alert('New passwords do not match.');
+        e.preventDefault();
+        return false;
+    }
+    
+    if (newPwd.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
 
 </body>
 </html>
