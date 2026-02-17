@@ -1029,7 +1029,12 @@ function appendBotMessage(text) {
     const chatMessages = document.getElementById("chatMessages");
     const msg = document.createElement("div");
     msg.className = "chat-message bot";
-    msg.textContent = text;
+    // Support both text and HTML content
+    if (typeof text === 'string' && text.includes('<')) {
+        msg.innerHTML = text;
+    } else {
+        msg.textContent = text;
+    }
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -1051,7 +1056,19 @@ function askNextQuestion() {
     }
 
     const q = questions[chatState.currentQuestion];
-    appendBotMessage(q.question);
+    // Create question with pencil icon for re-answering
+    const questionIndex = chatState.currentQuestion;
+    const questionHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span>${q.question}</span>
+            <button style="background: none; border: none; cursor: pointer; color: #0072ff; font-size: 14px; padding: 4px;" 
+                    onclick="reAnswerQuestion(${questionIndex})" 
+                    title="Re-answer this question">
+                ✏️
+            </button>
+        </div>
+    `;
+    appendBotMessage(questionHTML);
 
     const inputArea = document.getElementById("chatInputArea");
     inputArea.innerHTML = '<div class="chatbot-options"></div>';
@@ -1070,6 +1087,19 @@ function selectOption(key, text, weight) {
     appendUserMessage(text);
     chatState.symptoms[key] = weight;
     chatState.currentQuestion++;
+    askNextQuestion();
+}
+
+function reAnswerQuestion(questionIndex) {
+    // Set current question back to the specified index
+    chatState.currentQuestion = questionIndex;
+    // Clear the input area and ask the question again
+    const chatMessages = document.getElementById("chatMessages");
+    // Remove the last user message if it exists (optional, for cleanup)
+    const userMsgs = chatMessages.querySelectorAll('.chat-message.user');
+    if (userMsgs.length > 0) {
+        userMsgs[userMsgs.length - 1].remove();
+    }
     askNextQuestion();
 }
 
