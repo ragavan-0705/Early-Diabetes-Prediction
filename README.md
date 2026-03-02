@@ -1,59 +1,289 @@
-# Early-Diabetes-Prediction
+# 🩺 Early Diabetes Prediction System
 
-CLEANED CODE :
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from google.colab import files
+A Machine Learning based web application that predicts the likelihood of diabetes using medical, demographic, and lifestyle data.
 
-uploaded = files.upload()
-df = pd.read_csv(list(uploaded.keys())[0])
+Developed as a Final Year Project at Kumaraguru College of Technology.
 
-print(df.info())
-print(df.isnull().sum())
+---
 
-df.replace(['No Info', 'no info', 'Unknown', 'unknown', 'NA', ''], np.nan, inplace=True)
+## 📘 Project Overview
 
-numeric_cols = ['age', 'bmi', 'hbA1c_level', 'blood_glucose_level']
-for col in numeric_cols:
-    df[col].fillna(df[col].median(), inplace=True)
+Diabetes is a chronic health condition that often remains undiagnosed until severe complications arise.
 
-categorical_cols = ['gender', 'location', 'smoking_history']
-for col in categorical_cols:
-    df[col].fillna(df[col].mode()[0], inplace=True)
+This project aims to:
 
-df.drop_duplicates(inplace=True)
+✔️ Detect diabetes risk at an early stage  
+✔️ Provide real-time predictions  
+✔️ Promote preventive healthcare awareness  
 
-df['age'] = df['age'].astype(int)
-df['hypertension'] = df['hypertension'].astype(int)
-df['heart_disease'] = df['heart_disease'].astype(int)
-df['diabetes'] = df['diabetes'].astype(int)
+The system uses Machine Learning techniques to analyze user-provided health parameters and predicts diabetes risk instantly.
 
+After evaluating multiple models, the **Random Forest Classifier** was selected due to its high accuracy and reliability.
 
-df['gender'] = df['gender'].map({'Male': 1, 'Female': 0})
+---
 
+## ❗ Problem Statement
 
-df = pd.get_dummies(df, columns=['smoking_history'], drop_first=True)
-df = pd.get_dummies(df, columns=['location'], drop_first=True)
-X = df.drop('diabetes', axis=1)
-y = df['diabetes']
+Many individuals are unaware of their diabetic condition due to:
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+- Mild early symptoms  
+- Lack of routine testing  
+- Limited healthcare access  
 
+This system provides:
 
-print("Final dataset shape:", df.shape)
-print("Missing values after cleaning:\n", df.isnull().sum())
-print("Scaled feature shape:", X_scaled.shape)
+✔️ Early risk prediction  
+✔️ Quick and accessible screening  
+✔️ Preventive health insights  
 
+---
 
-DOWNLOAD CODE:
-from google.colab import files
+## 🎯 Objectives
 
-# Save the cleaned DataFrame to a CSV file
-df.to_csv('cleaned_diabetes_dataset.csv', index=False)
+- Perform data preprocessing  
+- Conduct exploratory data analysis  
+- Train ML models  
+- Evaluate performance  
+- Select best model  
+- Integrate with web application  
+- Deploy on cloud  
+- Enable real-time prediction  
 
-# Download the file
-files.download('cleaned_diabetes_dataset.csv')
+---
 
-print("Cleaned dataset downloaded as 'cleaned_diabetes_dataset.csv'")
+## 🏗 System Architecture
+
+```
+User Input
+   ↓
+Data Validation
+   ↓
+Preprocessing
+   ↓
+ML Model (Random Forest)
+   ↓
+Prediction
+   ↓
+Result Display
+```
+
+---
+
+## 🚀 Key Features
+
+- User Login & Signup  
+- Real-time Diabetes Prediction  
+- Gender-specific prediction forms  
+- BMI Calculator  
+- HbA1c estimation  
+- Smart chatbot support  
+- Cloud deployment  
+- Responsive user interface  
+
+---
+
+## 🧰 Technology Stack
+
+| Layer | Technology |
+|------|------------|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Python (Flask) |
+| ML Library | Scikit-learn |
+| Model | Random Forest |
+| Deployment | Render |
+| Model Storage | Joblib |
+
+---
+
+## 📊 Dataset Information
+
+- Total Records: **5001**
+- Features: **72**
+- Target: Diabetes Status
+
+### Feature Categories
+
+- Age  
+- Gender  
+- BMI  
+- Smoking History  
+- Hypertension  
+- Heart Disease  
+- Blood Glucose Level  
+- HbA1c Level  
+- Geographic Data  
+
+---
+
+## 🔧 Data Preprocessing
+
+- Missing value handling  
+- Mean / Median imputation  
+- Mode replacement  
+- Categorical encoding  
+- Train-Test Split  
+
+---
+
+## 📈 Exploratory Data Analysis
+
+Analysis performed on:
+
+- Class distribution  
+- BMI trends  
+- Feature correlation  
+- Health indicators  
+
+---
+
+## 🤖 Machine Learning Models Used
+
+- Logistic Regression  
+- Basic Binary Classifiers  
+- Random Forest  
+
+---
+
+## 🏆 Final Model
+
+**Random Forest Classifier**
+
+Reasons for selection:
+
+- High accuracy  
+- Handles complex datasets  
+- Reduces overfitting  
+- Provides feature importance  
+
+Model stored using:
+
+```
+joblib
+```
+
+---
+
+## 🌐 Web Application
+
+Users input:
+
+- Age  
+- BMI  
+- HbA1c  
+- Blood Glucose  
+- Smoking history  
+- Medical conditions  
+
+System predicts:
+
+➡️ Diabetic / Non-Diabetic risk  
+
+---
+
+## ☁️ Deployment
+
+Deployed on:
+
+➡️ Render Cloud Platform
+
+Steps followed:
+
+1. Created requirements.txt  
+2. Integrated ML model  
+3. Configured Flask app  
+4. Set environment variables  
+5. Deployed online  
+
+---
+
+## 🧪 Testing
+
+Performed:
+
+- Functional Testing  
+- Model Accuracy Testing  
+- Integration Testing  
+- Input Validation  
+- Edge Case Testing  
+
+---
+
+## ✅ Advantages
+
+- Quick prediction  
+- User-friendly  
+- Accessible online  
+- Supports preventive care  
+
+---
+
+## ⚠️ Limitations
+
+- Depends on dataset quality  
+- Not a medical diagnosis replacement  
+- Limited features  
+
+---
+
+## 🔮 Future Enhancements
+
+- Patient history tracking  
+- Advanced ML models  
+- Visualization dashboards  
+- Mobile application  
+- Hospital integration  
+
+---
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+- Python 3.x  
+- Flask  
+- Scikit-learn  
+
+---
+
+### Installation
+
+Clone repository:
+
+```bash
+git clone <repo-link>
+cd diabetes-prediction
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run application:
+
+```bash
+python app.py
+```
+
+---
+
+## 👩‍💻 Team Members
+
+- Ragavan K (23BIT077)  
+- Shakin Sakthi B O (23BIT100)  
+- Pradakshina V (23BIT073)  
+- Yokesh V (23BIT122)  
+- Santhoshni S (23BIT097)  
+
+Department of Information Technology  
+Kumaraguru College of Technology  
+Coimbatore  
+
+---
+
+## 📌 Conclusion
+
+This project demonstrates how Machine Learning can be integrated with cloud-based web applications to support early diabetes detection and preventive healthcare.
+
+---
