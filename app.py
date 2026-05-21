@@ -72,7 +72,7 @@ except Exception as e:
 # LOAD FEATURE COLUMNS
 # =========================
 
-CSV_PATH = os.path.join(BASE_DIR, "diabetes.csv")
+CSV_PATH = os.path.join(BASE_DIR, "diabetes_cleaned.csv")
 
 try:
     df_sample = pd.read_csv(CSV_PATH, nrows=5)

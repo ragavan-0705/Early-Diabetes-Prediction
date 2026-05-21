@@ -11,7 +11,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
 # 1️⃣ Load dataset
-df = pd.read_csv("diabetes.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+csv_path = os.path.join(BASE_DIR, "diabetes_cleaned.csv")
+
+df = pd.read_csv(csv_path)
 
 # ✅ FIX 1: Handle missing values
 df = df.fillna(df.median())
@@ -58,8 +62,7 @@ for model, acc in results.items():
     print(f"{model}: {acc:.4f}")
 
 # 6️⃣ Save best model
-os.makedirs("model", exist_ok=True)
-joblib.dump(rf, "model/diabetes_model.pkl")
-joblib.dump(scaler, "model/scaler.pkl")
+joblib.dump(rf, os.path.join(BASE_DIR, "diabetes_model.pkl"))
+joblib.dump(scaler, os.path.join(BASE_DIR, "scaler.pkl"))
 
 print("\n✅ Model and scaler saved successfully!")
